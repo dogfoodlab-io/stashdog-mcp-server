@@ -153,3 +153,114 @@ export interface AIResponse {
   data?: any;
   error?: string;
 }
+
+// GraphQL Response Types
+export interface SignInResponse {
+  signIn: {
+    id: string;
+    email: string;
+    displayName: string;
+    authToken: string;
+  };
+}
+
+export interface GetItemsResponse {
+  getItems: {
+    items: Item[];
+    totalCount: number;
+    hasMore: boolean;
+  };
+}
+
+export interface AddItemResponse {
+  addItem: Item;
+}
+
+export interface UpdateItemResponse {
+  updateItem: Item;
+}
+
+export interface DeleteItemResponse {
+  discardItem: {
+    success: boolean;
+    message: string;
+  };
+}
+
+export interface FavoriteItemResponse {
+  favoriteItem: Item;
+}
+
+export interface UnfavoriteItemResponse {
+  unfavoriteItem: Item;
+}
+
+export interface ImportFromUrlResponse {
+  importFromUrl: {
+    success: boolean;
+    items: Item[];
+    message: string;
+  };
+}
+
+export interface GetCollectionsResponse {
+  collections: Collection[];
+}
+
+export interface CreateCollectionResponse {
+  createCollection: Collection;
+}
+
+export interface UpdateCollectionResponse {
+  updateCollection: Collection;
+}
+
+export interface DeleteCollectionResponse {
+  deleteCollection: {
+    success: boolean;
+    message: string;
+  };
+}
+
+export interface AddItemsToCollectionResponse {
+  addItemsToCollection: {
+    success: boolean;
+    message: string;
+    collection: Collection;
+  };
+}
+
+export interface RemoveItemsFromCollectionResponse {
+  removeItemsFromCollection: {
+    success: boolean;
+    message: string;
+    collection: Collection;
+  };
+}
+
+export interface GetAllTagsResponse {
+  allTags: Tag[];
+}
+
+export interface SearchTagsResponse {
+  searchTags: Tag[];
+}
+
+export interface CreateTagResponse {
+  createTag: Tag;
+}
+
+export interface RenameTagResponse {
+  renameTag: Tag;
+}
+
+export interface DeleteTagResponse {
+  deleteTag: {
+    success: boolean;
+    message: string;
+  };
+}
+
+export interface GetUserStatsResponse {
+  getUserStats: UserStats;
+}
