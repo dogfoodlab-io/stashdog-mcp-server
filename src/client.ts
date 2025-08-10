@@ -2,6 +2,9 @@ import { GraphQLClient } from 'graphql-request';
 import { StashDogConfig } from './types.js';
 import * as operations from './graphql/operations.js';
 
+// Fixed missing import for SubscriptionTier
+type SubscriptionTier = import('./types').SubscriptionTier;
+
 export class StashDogClient {
   private client: GraphQLClient;
   private config: StashDogConfig;
@@ -200,5 +203,32 @@ export class StashDogClient {
   // Stats
   async getUserStats() {
     return this.client.request(operations.GET_USER_STATS);
+  }
+
+  // Added new methods for updated GraphQL operations
+
+  async getUser(userId: string) {
+    return this.client.request(operations.GET_USER, { userId });
+  }
+
+  async getNotifications(params?: { status?: string; limit?: number; offset?: number }) {
+    return this.client.request(operations.GET_NOTIFICATIONS, params);
+  }
+
+  async createSubscription(input: {
+    stripePriceId: string;
+    tier: SubscriptionTier;
+    paymentMethodId?: string;
+    couponId?: string;
+  }) {
+    return this.client.request(operations.CREATE_SUBSCRIPTION, { input });
+  }
+
+  async getGroups() {
+    return this.client.request(operations.GET_GROUPS);
+  }
+
+  async getSubscriptionDetails(countryCode: string, currencyCode: string) {
+    return this.client.request(operations.GET_SUBSCRIPTION_DETAILS, { countryCode, currencyCode });
   }
 }

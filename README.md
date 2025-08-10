@@ -135,6 +135,36 @@ Perform intelligent searches with natural language queries.
 - `"Find kitchen items that are favorited"`
 - `"List storage containers with more than 5 items"`
 
+### 8. `manage_users`
+Fetch user details.
+
+**Example:**
+```
+manage_users with userId: abc123
+```
+
+### 9. `manage_notifications`
+Fetch user notifications.
+
+**Examples:**
+- `"Fetch all unread notifications"`
+- `"Get notifications with a limit of 10"`
+
+### 10. `manage_groups`
+Fetch user groups.
+
+**Example:**
+```
+manage_groups
+```
+
+### 11. `manage_subscriptions`
+Manage subscriptions including fetching details and creating subscriptions.
+
+**Examples:**
+- `"Get subscription details for US in USD"`
+- `"Create a subscription with tier PREMIUM"`
+
 ## 📝 Usage Examples
 
 ### Adding Items

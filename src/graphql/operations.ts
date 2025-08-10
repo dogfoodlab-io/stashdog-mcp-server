@@ -159,6 +159,90 @@ export const GET_USER_STATS = gql`
   }
 `;
 
+export const GET_USER = gql`
+  query GetUser($userId: String!) {
+    getUser(userId: $userId) {
+      id
+      email
+      displayName
+      isAdmin
+      createdAt
+      lastSignIn
+      pushTokens
+      subscriptionTier
+      isPremium
+      subscriptionId
+    }
+  }
+`;
+
+export const GET_NOTIFICATIONS = gql`
+  query GetUserNotifications($status: String, $limit: Float, $offset: Float) {
+    getUserNotifications(status: $status, limit: $limit, offset: $offset) {
+      id
+      userId
+      type
+      title
+      message
+      entityId
+      entityType
+      status
+      createdAt
+      updatedAt
+      isDeleted
+      metadata
+    }
+  }
+`;
+
+export const GET_GROUPS = gql`
+  query MyGroups {
+    myGroups {
+      id
+      name
+      description
+      ownerId
+      organizationId
+      maxMembers
+      avatarUrl
+      createdAt
+      updatedAt
+      deletedAt
+      memberCount
+      isOwner
+      userRole
+    }
+  }
+`;
+
+export const GET_SUBSCRIPTION_DETAILS = gql`
+  query GetSubscriptionDetailsWithPricing($countryCode: String!, $currencyCode: String!) {
+    getSubscriptionDetailsWithPricing(countryCode: $countryCode, currencyCode: $currencyCode) {
+      subscription {
+        id
+        tier
+        status
+        isActive
+        isPremium
+      }
+      plan {
+        id
+        name
+        price
+        currency
+        interval
+        features
+      }
+      pricing {
+        basePrice
+        finalPrice
+        promotionalDiscount
+        promotionName
+      }
+    }
+  }
+`;
+
 // Mutations
 export const ADD_ITEM = gql`
   mutation AddItem(
@@ -408,6 +492,25 @@ export const SIGN_IN = gql`
       email
       authToken
       displayName
+    }
+  }
+`;
+
+// New mutations for updated schema
+export const CREATE_SUBSCRIPTION = gql`
+  mutation CreateSubscription($input: CreateSubscriptionInput!) {
+    createSubscription(input: $input) {
+      id
+      userId
+      stripeCustomerId
+      stripeSubscriptionId
+      stripePriceId
+      status
+      tier
+      currentPeriodStart
+      currentPeriodEnd
+      isActive
+      isPremium
     }
   }
 `;

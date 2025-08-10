@@ -264,3 +264,135 @@ export interface DeleteTagResponse {
 export interface GetUserStatsResponse {
   getUserStats: UserStats;
 }
+
+// Added new TypeScript interfaces for updated schema
+export interface UserType {
+  id: string;
+  email: string;
+  displayName?: string;
+  isAdmin: boolean;
+  createdAt: string;
+  lastSignIn?: string;
+  pushTokens: string[];
+  subscriptionTier: SubscriptionTier;
+  isPremium: boolean;
+  subscriptionId?: string;
+}
+
+export interface Notification {
+  id: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  entityId?: string;
+  entityType?: string;
+  status: NotificationStatus;
+  createdAt: string;
+  updatedAt: string;
+  isDeleted: boolean;
+  metadata?: string;
+}
+
+export interface Group {
+  id: string;
+  name: string;
+  description?: string;
+  ownerId: string;
+  organizationId?: string;
+  maxMembers: number;
+  avatarUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+  memberCount: number;
+  isOwner: boolean;
+  userRole: string;
+}
+
+export interface SubscriptionDetailsWithPricing {
+  subscription: SubscriptionType;
+  plan: SubscriptionPlanType;
+  pricing: SubscriptionPricingType;
+}
+
+export interface SubscriptionType {
+  id: string;
+  userId: string;
+  stripeCustomerId: string;
+  stripeSubscriptionId?: string;
+  stripePriceId: string;
+  status: SubscriptionStatus;
+  tier: SubscriptionTier;
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  isActive: boolean;
+  isPremium: boolean;
+}
+
+export interface SubscriptionPlanType {
+  id: string;
+  name: string;
+  price: number;
+  currency: string;
+  interval: BillingInterval;
+  features: string[];
+}
+
+export interface SubscriptionPricingType {
+  basePrice: number;
+  finalPrice: number;
+  promotionalDiscount: number;
+  promotionName?: string;
+}
+
+export enum SubscriptionTier {
+  FREE = 'FREE',
+  PREMIUM = 'PREMIUM',
+  ENTERPRISE = 'ENTERPRISE',
+}
+
+export enum NotificationType {
+  SHARE_INVITATION_CREATED = 'SHARE_INVITATION_CREATED',
+  SHARE_INVITATION_ACCEPTED = 'SHARE_INVITATION_ACCEPTED',
+  SHARE_INVITATION_DECLINED = 'SHARE_INVITATION_DECLINED',
+  SHARE_REVOKED = 'SHARE_REVOKED',
+  ITEM_SHARED = 'ITEM_SHARED',
+}
+
+export enum NotificationStatus {
+  UNREAD = 'UNREAD',
+  READ = 'READ',
+}
+
+export enum BillingInterval {
+  MONTH = 'MONTH',
+  YEAR = 'YEAR',
+}
+
+export enum SubscriptionStatus {
+  INCOMPLETE = 'INCOMPLETE',
+  ACTIVE = 'ACTIVE',
+  CANCELED = 'CANCELED',
+}
+
+// Added missing exports for response types
+export interface GetUserResponse {
+  getUser: UserType;
+}
+
+export interface ManageUsersResponse {
+  users: UserType[];
+}
+
+export interface ManageNotificationsResponse {
+  notifications: Notification[];
+}
+
+export interface ManageGroupsResponse {
+  groups: Group[];
+}
+
+export interface ManageSubscriptionsResponse {
+  subscriptionDetails: SubscriptionDetailsWithPricing;
+}

@@ -40,7 +40,13 @@ import {
   CreateTagResponse,
   RenameTagResponse,
   DeleteTagResponse,
-  GetUserStatsResponse
+  GetUserStatsResponse,
+  GetUserResponse,
+  NotificationStatus,
+  ManageUsersResponse,
+  ManageNotificationsResponse,
+  ManageGroupsResponse,
+  ManageSubscriptionsResponse
 } from './types.js';
 
 // Load environment variables
@@ -168,6 +174,69 @@ const tools = [
         }
       },
       required: ['query']
+    }
+  },
+  {
+    name: 'manage_users',
+    description: 'Manage users including fetching user details.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        userId: {
+          type: 'string',
+          description: 'ID of the user to fetch details for.'
+        }
+      },
+      required: ['userId']
+    }
+  },
+  {
+    name: 'manage_notifications',
+    description: 'Fetch user notifications.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        status: {
+          type: 'string',
+          description: 'Filter notifications by status (e.g., UNREAD, READ).'
+        },
+        limit: {
+          type: 'number',
+          description: 'Maximum number of notifications to fetch.'
+        },
+        offset: {
+          type: 'number',
+          description: 'Offset for pagination.'
+        }
+      },
+      required: []
+    }
+  },
+  {
+    name: 'manage_groups',
+    description: 'Fetch user groups.',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+      required: []
+    }
+  },
+  {
+    name: 'manage_subscriptions',
+    description: 'Manage subscriptions including fetching details and creating subscriptions.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        countryCode: {
+          type: 'string',
+          description: 'Country code for subscription pricing.'
+        },
+        currencyCode: {
+          type: 'string',
+          description: 'Currency code for subscription pricing.'
+        }
+      },
+      required: ['countryCode', 'currencyCode']
     }
   }
 ];
@@ -593,6 +662,120 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
         } catch (error) {
           const message = generateResponseMessage('smart_search', false, null, error instanceof Error ? error.message : 'Unknown error');
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(createAIResponse(false, message, null, error instanceof Error ? error.message : 'Unknown error'))
+              }
+            ]
+          };
+        }
+      }
+
+      case 'manage_users': {
+        const { userId } = args as { userId: string };
+
+        try {
+          const result = await client.getUser(userId) as GetUserResponse;
+          const message = `User details for ${result.getUser.email}`;
+
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(createAIResponse(true, message, result.getUser))
+              }
+            ]
+          };
+
+        } catch (error) {
+          const message = generateResponseMessage('manage_users', false, null, error instanceof Error ? error.message : 'Unknown error');
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(createAIResponse(false, message, null, error instanceof Error ? error.message : 'Unknown error'))
+              }
+            ]
+          };
+        }
+      }
+
+      case 'manage_notifications': {
+        const { status, limit, offset } = args as { status?: NotificationStatus; limit?: number; offset?: number };
+
+        try {
+          const result = await client.getNotifications({ status, limit, offset }) as ManageNotificationsResponse;
+          const message = `Fetched ${result.notifications.length} notifications`;
+
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(createAIResponse(true, message, result.notifications))
+              }
+            ]
+          };
+
+        } catch (error) {
+          const message = generateResponseMessage('manage_notifications', false, null, error instanceof Error ? error.message : 'Unknown error');
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(createAIResponse(false, message, null, error instanceof Error ? error.message : 'Unknown error'))
+              }
+            ]
+          };
+        }
+      }
+
+      case 'manage_groups': {
+        try {
+          const result = await client.getGroups() as ManageGroupsResponse;
+          const message = `Fetched ${result.groups.length} groups`;
+
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(createAIResponse(true, message, result.groups))
+              }
+            ]
+          };
+
+        } catch (error) {
+          const message = generateResponseMessage('manage_groups', false, null, error instanceof Error ? error.message : 'Unknown error');
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(createAIResponse(false, message, null, error instanceof Error ? error.message : 'Unknown error'))
+              }
+            ]
+          };
+        }
+      }
+
+      case 'manage_subscriptions': {
+        const { countryCode, currencyCode } = args as { countryCode: string; currencyCode: string };
+
+        try {
+          const result = await client.getSubscriptionDetails(countryCode, currencyCode) as ManageSubscriptionsResponse;
+          const message = `Fetched ${result.subscriptions.length} subscriptions`;
+
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(createAIResponse(true, message, result.subscriptions))
+              }
+            ]
+          };
+
+        } catch (error) {
+          const message = generateResponseMessage('manage_subscriptions', false, null, error instanceof Error ? error.message : 'Unknown error');
           return {
             content: [
               {
