@@ -26,7 +26,16 @@ export interface ItemImage {
   createdAt: string;
   lastModified: string;
 }
-
+export interface Collection {
+  id: string;
+  name: string;
+  description?: string;
+  coverImageUrl?: string;
+  visibility: 'PRIVATE' | 'SHARED';
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+}
 export interface CustomField {
   name: string;
   type: string;
@@ -38,18 +47,12 @@ export interface ItemPermission {
   userId: string;
   permissionLevel: string;
 }
-
-export interface Collection {
-  id: string;
-  name: string;
-  description?: string;
-  coverImageUrl?: string;
-  visibility: 'PRIVATE' | 'SHARED';
-  userId: string;
-  createdAt: string;
-  updatedAt: string;
+export interface SearchFilters {
+  search?: string;
+  tags?: string[];
+  limit?: number;
+  offset?: number;
 }
-
 export interface CollectionItem {
   id: string;
   collectionId: string;
@@ -59,7 +62,6 @@ export interface CollectionItem {
   addedBy: string;
   item: Item;
 }
-
 export interface Tag {
   id: string;
   name: string;
@@ -67,25 +69,10 @@ export interface Tag {
   createdAt: string;
   updatedAt: string;
 }
-
 export interface UserStats {
   itemsCount: number;
   collectionsCount: number;
   tagsCount: number;
-}
-
-export interface SearchFilters {
-  search?: string;
-  tags?: string[];
-  limit?: number;
-  offset?: number;
-}
-
-export interface CreateCollectionInput {
-  name: string;
-  description?: string;
-  coverImageUrl?: string;
-  visibility?: 'PRIVATE' | 'SHARED';
 }
 
 export interface UpdateCollectionInput {

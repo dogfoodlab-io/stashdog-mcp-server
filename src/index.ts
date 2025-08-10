@@ -758,35 +758,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         }
       }
 
-      case 'manage_subscriptions': {
-        const { countryCode, currencyCode } = args as { countryCode: string; currencyCode: string };
-
-        try {
-          const result = await client.getSubscriptionDetails(countryCode, currencyCode) as ManageSubscriptionsResponse;
-          const message = `Fetched ${result.subscriptions.length} subscriptions`;
-
-          return {
-            content: [
-              {
-                type: 'text',
-                text: JSON.stringify(createAIResponse(true, message, result.subscriptions))
-              }
-            ]
-          };
-
-        } catch (error) {
-          const message = generateResponseMessage('manage_subscriptions', false, null, error instanceof Error ? error.message : 'Unknown error');
-          return {
-            content: [
-              {
-                type: 'text',
-                text: JSON.stringify(createAIResponse(false, message, null, error instanceof Error ? error.message : 'Unknown error'))
-              }
-            ]
-          };
-        }
-      }
-
       default:
         throw new McpError(
           ErrorCode.MethodNotFound,
