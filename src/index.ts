@@ -8,7 +8,6 @@ import {
   ListToolsRequestSchema,
   McpError,
 } from '@modelcontextprotocol/sdk/types.js';
-import { z } from 'zod';
 import dotenv from 'dotenv';
 import { StashDogClient } from './client.js';
 import { 
@@ -21,32 +20,15 @@ import {
 } from './nlp-utils.js';
 import { 
   AIResponse,
-  SignInResponse,
-  GetItemsResponse,
-  AddItemResponse,
-  UpdateItemResponse,
-  DeleteItemResponse,
-  FavoriteItemResponse,
-  UnfavoriteItemResponse,
+  CollectionsResponse,
   ImportFromUrlResponse,
-  GetCollectionsResponse,
-  CreateCollectionResponse,
-  UpdateCollectionResponse,
-  DeleteCollectionResponse,
-  AddItemsToCollectionResponse,
-  RemoveItemsFromCollectionResponse,
-  GetAllTagsResponse,
-  SearchTagsResponse,
-  CreateTagResponse,
-  RenameTagResponse,
-  DeleteTagResponse,
-  GetUserStatsResponse,
-  GetUserResponse,
+  ItemsResponse,
   NotificationStatus,
-  ManageUsersResponse,
+  SignInResponse,
+  TagsResponse,
+  UserType,
   ManageNotificationsResponse,
-  ManageGroupsResponse,
-  ManageSubscriptionsResponse
+  ManageGroupsResponse
 } from './types.js';
 
 // Load environment variables
@@ -65,12 +47,14 @@ const server = new Server(
 );
 
 // Initialize StashDog client
-const API_URL = process.env.STASHDOG_API_URL || 'http://localhost:3000/graphql';
+const SUPABASE_URL = process.env.STASHDOG_SUPABASE_URL || process.env.STASHDOG_API_URL || 'http://localhost:54321';
 const AUTH_TOKEN = process.env.STASHDOG_AUTH_TOKEN;
+const SUPABASE_ANON_KEY = process.env.STASHDOG_SUPABASE_ANON_KEY;
 
 const client = new StashDogClient({
-  apiUrl: API_URL,
-  authToken: AUTH_TOKEN
+  supabaseUrl: SUPABASE_URL,
+  authToken: AUTH_TOKEN,
+  anonKey: SUPABASE_ANON_KEY
 });
 
 // Tool definitions
@@ -262,16 +246,16 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         
         try {
           const result = await client.signIn(email, password) as SignInResponse;
-          if (result.signIn?.authToken) {
-            client.setAuthToken(result.signIn.authToken);
+          if (result.accessToken) {
+            client.setAuthToken(result.accessToken);
             return {
               content: [
                 {
                   type: 'text',
-                  text: JSON.stringify(createAIResponse(true, `Successfully authenticated as ${result.signIn.email}`, {
-                    userId: result.signIn.id,
-                    email: result.signIn.email,
-                    displayName: result.signIn.displayName
+                  text: JSON.stringify(createAIResponse(true, `Successfully authenticated as ${result.user.email}`, {
+                    userId: result.user.id,
+                    email: result.user.email,
+                    displayName: result.user.displayName
                   }))
                 }
               ]
@@ -313,7 +297,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 containerId: parsed.containerId,
                 customFields: parsed.customFields,
                 isClassified: false
-              }) as AddItemResponse;
+              });
               operation = 'add_item';
               break;
 
@@ -330,7 +314,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 isStorage: parsed.isStorage,
                 containerId: parsed.containerId,
                 customFields: parsed.customFields
-              }) as UpdateItemResponse;
+              });
               operation = 'update_item';
               break;
 
@@ -339,7 +323,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 throw new Error('Item ID is required for deleting items');
               }
               
-              result = await client.deleteItem(parsed.itemId) as DeleteItemResponse;
+              result = await client.deleteItem(parsed.itemId);
               operation = 'delete_item';
               break;
 
@@ -348,7 +332,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 throw new Error('Item ID is required for favoriting items');
               }
               
-              result = await client.favoriteItem(parsed.itemId) as FavoriteItemResponse;
+              result = await client.favoriteItem(parsed.itemId);
               operation = 'favorite_item';
               break;
 
@@ -357,7 +341,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 throw new Error('Item ID is required for unfavoriting items');
               }
               
-              result = await client.unfavoriteItem(parsed.itemId) as UnfavoriteItemResponse;
+              result = await client.unfavoriteItem(parsed.itemId);
               operation = 'unfavorite_item';
               break;
 
@@ -368,7 +352,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 tags: parsed.filters?.tags,
                 limit: parsed.filters?.limit || 20,
                 offset: parsed.filters?.offset || 0
-              }) as GetItemsResponse;
+              }) as ItemsResponse;
               operation = 'search_items';
               break;
           }
@@ -376,10 +360,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           const message = generateResponseMessage(operation, true, result);
           let displayData = result;
 
-          if (operation === 'search_items' && result.getItems?.items) {
+          if (operation === 'search_items' && result.items) {
             displayData = {
-              ...result.getItems,
-              formattedItems: formatItemsForDisplay(result.getItems.items)
+              ...result,
+              formattedItems: formatItemsForDisplay(result.items)
             };
           }
 
@@ -423,7 +407,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 name: parsed.collectionName,
                 description: parsed.description,
                 visibility: parsed.visibility || 'PRIVATE'
-              }) as CreateCollectionResponse;
+              });
               operation = 'create_collection';
               break;
 
@@ -437,7 +421,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 name: parsed.collectionName,
                 description: parsed.description,
                 visibility: parsed.visibility
-              }) as UpdateCollectionResponse;
+              });
               operation = 'update_collection';
               break;
 
@@ -446,7 +430,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 throw new Error('Collection ID is required for deleting collections');
               }
               
-              result = await client.deleteCollection(parsed.collectionId) as DeleteCollectionResponse;
+              result = await client.deleteCollection(parsed.collectionId);
               operation = 'delete_collection';
               break;
 
@@ -455,7 +439,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 throw new Error('Collection ID and item IDs are required for adding items to collections');
               }
               
-              result = await client.addItemsToCollection(parsed.collectionId, parsed.itemIds) as AddItemsToCollectionResponse;
+              result = await client.addItemsToCollection(parsed.collectionId, parsed.itemIds);
               operation = 'add_to_collection';
               break;
 
@@ -464,13 +448,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 throw new Error('Collection ID and item IDs are required for removing items from collections');
               }
               
-              result = await client.removeItemsFromCollection(parsed.collectionId, parsed.itemIds) as RemoveItemsFromCollectionResponse;
+              result = await client.removeItemsFromCollection(parsed.collectionId, parsed.itemIds);
               operation = 'remove_from_collection';
               break;
 
             default:
               // List collections
-              result = await client.getCollections() as GetCollectionsResponse;
+                result = await client.getCollections() as CollectionsResponse;
               operation = 'list_collections';
               break;
           }
@@ -550,13 +534,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
               throw new Error('Tag name is required for creating tags');
             }
             
-            result = await client.createTag(nameMatch[1].trim()) as CreateTagResponse;
+            result = await client.createTag(nameMatch[1].trim());
             operation = 'create_tag';
           } else if (lower.includes('search') || lower.includes('find')) {
             const queryMatch = /(?:search|find)\s+(.+)$/i.exec(instruction);
             const query = queryMatch ? queryMatch[1] : '';
             
-            result = await client.searchTags(query) as SearchTagsResponse;
+            result = await client.searchTags(query) as TagsResponse;
             operation = 'search_tags';
           } else if (lower.includes('rename')) {
             const renameMatch = /rename\s+tag\s+([a-f0-9-]+)\s+to\s+(.+)$/i.exec(instruction);
@@ -564,7 +548,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
               throw new Error('Tag ID and new name are required for renaming tags');
             }
             
-            result = await client.renameTag(renameMatch[1], renameMatch[2].trim()) as RenameTagResponse;
+            result = await client.renameTag(renameMatch[1], renameMatch[2].trim());
             operation = 'rename_tag';
           } else if (lower.includes('delete') || lower.includes('remove')) {
             const idMatch = /(?:delete|remove)\s+tag\s+([a-f0-9-]+)$/i.exec(instruction);
@@ -572,11 +556,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
               throw new Error('Tag ID is required for deleting tags');
             }
             
-            result = await client.deleteTag(idMatch[1]) as DeleteTagResponse;
+            result = await client.deleteTag(idMatch[1]);
             operation = 'delete_tag';
           } else {
             // List all tags
-            result = await client.getAllTags() as GetAllTagsResponse;
+            result = await client.getAllTags() as TagsResponse;
             operation = 'list_tags';
           }
 
@@ -606,14 +590,19 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       case 'get_inventory_stats': {
         try {
-          const result = await client.getUserStats() as GetUserStatsResponse;
-          const message = `📊 Inventory Stats: ${result.getUserStats.itemsCount} items, ${result.getUserStats.collectionsCount} collections, ${result.getUserStats.tagsCount} tags`;
+          const result = await client.getUsageMetrics() as {
+            item_count: number;
+            collection_count: number;
+            storage_used: number;
+            shared_item_count: number;
+          };
+          const message = `📊 Inventory Stats: ${result.item_count} items, ${result.collection_count} collections, ${result.storage_used} bytes used, ${result.shared_item_count} shared items`;
 
           return {
             content: [
               {
                 type: 'text',
-                text: JSON.stringify(createAIResponse(true, message, result.getUserStats))
+                text: JSON.stringify(createAIResponse(true, message, result))
               }
             ]
           };
@@ -632,23 +621,27 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'smart_search': {
-        const { query, limit = 20 } = args as { query: string; limit?: number };
+        const { query, limit } = args as { query: string; limit?: number };
 
         try {
           // Parse the query for different search criteria
           const parsed = parseItemRequest(query);
           
-          const result = await client.getItems({
-            search: parsed.searchQuery || query,
+          // Use provided limit, default to 20
+          const finalLimit = typeof limit === 'number' ? limit : 20;
+          
+          // Search with the query (or empty if no search term extracted)
+          const searchResult = await client.getItems({
+            search: parsed.searchQuery || undefined,
             tags: parsed.tags,
-            limit: limit,
+            limit: finalLimit,
             offset: 0
-          }) as GetItemsResponse;
+          }) as ItemsResponse;
 
-          const message = generateResponseMessage('search_items', true, result.getItems);
+          const message = generateResponseMessage('search_items', true, searchResult);
           const displayData = {
-            ...result.getItems,
-            formattedItems: formatItemsForDisplay(result.getItems.items)
+            ...searchResult,
+            formattedItems: formatItemsForDisplay(searchResult.items)
           };
 
           return {
@@ -677,14 +670,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const { userId } = args as { userId: string };
 
         try {
-          const result = await client.getUser(userId) as GetUserResponse;
-          const message = `User details for ${result.getUser.email}`;
+          const result = await client.getUser(userId) as UserType;
+          const message = `User details for ${result.email}`;
 
           return {
             content: [
               {
                 type: 'text',
-                text: JSON.stringify(createAIResponse(true, message, result.getUser))
+                text: JSON.stringify(createAIResponse(true, message, result))
               }
             ]
           };

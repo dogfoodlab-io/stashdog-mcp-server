@@ -205,7 +205,13 @@ export function parseCollectionRequest(instruction: string): ParsedCollectionReq
   // Extract item IDs for add/remove operations
   const itemIdMatches = instruction.match(/[a-f0-9-]{36}|[a-f0-9]{32}/g);
   if (itemIdMatches && (action === 'add_items' || action === 'remove_items')) {
-    result.itemIds = itemIdMatches;
+    const filteredItemIds = result.collectionId
+      ? itemIdMatches.filter((itemId) => itemId !== result.collectionId)
+      : itemIdMatches;
+
+    if (filteredItemIds.length > 0) {
+      result.itemIds = filteredItemIds;
+    }
   }
 
   return result;
@@ -247,7 +253,10 @@ export function generateResponseMessage(operation: string, success: boolean, dat
     case 'add_to_collection':
       return `✅ Successfully added items to collection`;
     case 'import_from_url':
-      return `📥 Successfully imported item from URL with ID: ${data?.id}`;
+      if (data?.items?.length) {
+        return `📥 Successfully imported ${data.items.length} item(s) from URL`;
+      }
+      return `📥 Successfully imported item from URL`;
     default:
       return success ? `✅ Operation completed successfully` : `❌ Operation failed`;
   }

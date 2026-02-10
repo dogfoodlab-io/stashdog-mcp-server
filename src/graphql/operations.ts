@@ -27,8 +27,22 @@ export const GET_ITEM = gql`
       }
       images {
         id
-        url
         path
+        versions {
+          original {
+            path
+            blurhash
+          }
+          preview {
+            path
+            blurhash
+          }
+          thumbnail {
+            path
+            blurhash
+          }
+        }
+        uploadedBy
         createdAt
         lastModified
       }
@@ -41,6 +55,7 @@ export const GET_ITEM = gql`
         id
         userId
         permissionLevel
+        status
       }
     }
   }
@@ -119,8 +134,21 @@ export const GET_COLLECTION_ITEMS = gql`
         isStorage
         images {
           id
-          url
           path
+          versions {
+            original {
+              path
+              blurhash
+            }
+            preview {
+              path
+              blurhash
+            }
+            thumbnail {
+              path
+              blurhash
+            }
+          }
         }
       }
     }
@@ -145,16 +173,6 @@ export const SEARCH_TAGS = gql`
       id
       name
       usageCount
-    }
-  }
-`;
-
-export const GET_USER_STATS = gql`
-  query GetUserStats {
-    getUserStats {
-      itemsCount
-      collectionsCount
-      tagsCount
     }
   }
 `;
@@ -239,6 +257,28 @@ export const GET_SUBSCRIPTION_DETAILS = gql`
         promotionalDiscount
         promotionName
       }
+    }
+  }
+`;
+
+export const MY_USAGE_METRICS = gql`
+  query MyUsageMetrics {
+    myUsageMetrics {
+      userId
+      itemCount
+      collectionCount
+      storageUsed
+      sharedItemCount
+      aiCompletionsUsed
+      currentLimits {
+        maxItems
+        maxStorage
+        maxCollections
+        maxSharedUsers
+        aiCompletionsPerMonth
+      }
+      periodStart
+      periodEnd
     }
   }
 `;

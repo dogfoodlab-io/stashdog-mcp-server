@@ -44,14 +44,17 @@ A Model Context Protocol (MCP) server that provides natural language tools for m
 Create a `.env` file in the root directory:
 
 ```env
-# StashDog API Configuration
-STASHDOG_API_URL=http://localhost:3000/graphql
+# StashDog Supabase Configuration
+STASHDOG_SUPABASE_URL=http://localhost:54321
+STASHDOG_SUPABASE_ANON_KEY=your_anon_key_here
 STASHDOG_AUTH_TOKEN=your_auth_token_here
 
 # Optional: Pre-configured credentials
 STASHDOG_EMAIL=your_email@example.com
 STASHDOG_PASSWORD=your_password
 ```
+
+This server only uses user access tokens for requests. Do not provide a service role key.
 
 ### MCP Client Configuration
 
@@ -64,7 +67,8 @@ Add this server to your `.cursor/mcp.json` or similar MCP client configuration:
       "command": "node",
       "args": ["/path/to/stashdog-mcp-server/dist/index.js"],
       "env": {
-        "STASHDOG_API_URL": "http://localhost:3000/graphql",
+        "STASHDOG_SUPABASE_URL": "http://localhost:54321",
+        "STASHDOG_SUPABASE_ANON_KEY": "your_anon_key_here",
         "STASHDOG_AUTH_TOKEN": "your_token_here"
       }
     }
@@ -234,7 +238,7 @@ The server provides detailed error messages for common scenarios:
 - Missing required parameters
 - Authentication failures
 - Network connectivity issues
-- GraphQL errors
+- Supabase REST errors
 - Validation errors
 
 ## 📁 Project Structure
@@ -243,11 +247,11 @@ The server provides detailed error messages for common scenarios:
 stashdog-mcp-server/
 ├── src/
 │   ├── index.ts              # Main MCP server
-│   ├── client.ts             # GraphQL client wrapper
+│   ├── client.ts             # Supabase REST client wrapper
 │   ├── types.ts              # TypeScript types
 │   ├── nlp-utils.ts          # Natural language processing
 │   └── graphql/
-│       └── operations.ts     # GraphQL queries and mutations
+│       └── operations.ts     # Legacy GraphQL queries (unused)
 ├── dist/                     # Compiled JavaScript
 ├── package.json
 ├── tsconfig.json

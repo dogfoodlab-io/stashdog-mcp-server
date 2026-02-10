@@ -10,20 +10,28 @@
     "dev": "tsx watch src/index.ts",
     "test": "jest"
   },
-  "keywords": ["mcp", "stashdog", "inventory", "graphql"],
+  "keywords": [
+    "mcp",
+    "stashdog",
+    "inventory",
+    "graphql"
+  ],
   "author": "StashDog Team",
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.6.0",
-    "graphql-request": "^6.1.0",
     "dotenv": "^16.3.1",
+    "graphql": "^16.8.0",
+    "graphql-request": "^6.0.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.14",
     "@types/node": "^20.0.0",
-    "typescript": "^5.0.0",
+    "jest": "^29.0.0",
+    "ts-jest": "^29.2.6",
     "tsx": "^4.0.0",
-    "jest": "^29.0.0"
+    "typescript": "^5.0.0"
   },
   "bin": {
     "stashdog-mcp-server": "./dist/index.js"
